@@ -3,57 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ローバー操作パネル</title>
+    <title>高機能探査ローバー操作パネル</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #333; text-align: center; margin: 0; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #333; text-align: center; margin: 0; padding: 15px; }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 360px; margin: 0 auto 10px auto; }
-        h1 { font-size: 1.4rem; color: #2c3e50; margin: 0; }
+        h1 { font-size: 1.3rem; color: #2c3e50; margin: 0; }
         
-        /* 歯車設定ボタン */
-        .gear-btn { background: #e2e8f0; border: none; font-size: 1.4rem; padding: 8px 12px; border-radius: 50%; cursor: pointer; transition: background 0.2s; }
+        /* SVG歯車ボタン */
+        .gear-btn { background: #e2e8f0; border: none; padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
         .gear-btn:hover { background: #cbd5e1; }
+        .gear-btn svg { width: 22px; height: 22px; fill: #334155; }
 
-        .status-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; margin: 10px auto; max-width: 360px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .status-display { font-size: 1.2rem; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
+        .status-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; margin: 10px auto; max-width: 360px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .status-display { font-size: 1.1rem; font-weight: bold; color: #2563eb; margin-bottom: 6px; }
+        .distance-display { font-size: 0.95rem; color: #475569; font-weight: bold; }
         
-        .visualizer { width: 90px; height: 90px; margin: 0 auto; border: 3px solid #cbd5e1; border-radius: 50%; position: relative; background: #f8fafc; }
-        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; transition: transform 0.2s; color: #1e293b; }
+        .visualizer { width: 80px; height: 80px; margin: 8px auto; border: 3px solid #cbd5e1; border-radius: 50%; position: relative; background: #f8fafc; }
+        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; transition: transform 0.2s; color: #1e293b; }
         
-        /* 設定パネル（初期は非表示、歯車でトグル） */
-        .settings-panel { max-width: 360px; margin: 0 auto 15px auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left; }
+        /* モード切り替えタブ */
+        .mode-container { max-width: 360px; margin: 10px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mode-btn { background: #e2e8f0; border: none; padding: 10px; font-size: 0.95rem; font-weight: bold; border-radius: 8px; cursor: pointer; color: #475569; }
+        .mode-btn.active { background: #3b82f6; color: white; }
+
+        /* 設定パネル */
+        .settings-panel { max-width: 360px; margin: 0 auto 10px auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; display: none; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .settings-panel.show { display: block; }
-        .settings-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 10px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        .settings-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
         
-        .inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .input-group label { font-size: 0.85rem; color: #64748b; font-weight: bold; display: block; margin-bottom: 4px; }
-        .input-group input { width: 100%; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; text-align: center; background: #f8fafc; }
-        .apply-btn { width: 100%; margin-top: 10px; background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .apply-btn:active { background: #2563eb; }
+        .inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-group label { font-size: 0.8rem; color: #64748b; font-weight: bold; display: block; margin-bottom: 3px; }
+        .input-group input { width: 100%; padding: 6px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; text-align: center; background: #f8fafc; }
+        .apply-btn { width: 100%; margin-top: 8px; background: #3b82f6; color: white; border: none; padding: 6px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
         /* コントロールボタン群 */
-        .control-panel { max-width: 360px; margin: 15px auto; display: flex; flex-direction: column; gap: 10px; }
-        .btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 16px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; user-select: none; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .control-panel { max-width: 360px; margin: 10px auto; display: flex; flex-direction: column; gap: 8px; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 14px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .btn:active { background: #3b82f6; color: white; border-color: #3b82f6; }
         .btn-stop { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
         .btn-stop:active { background: #ef4444; color: white; }
+
+        /* ログ表示ボックス */
+        .log-box { max-width: 360px; margin: 10px auto; background: #1e293b; color: #38bdf8; font-family: monospace; font-size: 0.75rem; padding: 8px; border-radius: 8px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 
     <div class="header-container">
-        <h1>ローバー操作</h1>
-        <button class="gear-btn" onclick="toggleSettings()" title="設定">⚙️</button>
+        <h1>ローバー制御ダッシュボード</h1>
+        <button class="gear-btn" onclick="toggleSettings()" title="設定">
+            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22 L2.74,8.87C2.63,9.08,2.68,9.35,2.86,9.5l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        </button>
+    </div>
+
+    <!-- モード切替タブ -->
+    <div class="mode-container">
+        <button class="mode-btn active" id="btn-manual" onclick="setMode('manual')">手動操作モード</button>
+        <button class="mode-btn" id="btn-auto" onclick="setMode('auto')">自律回避モード</button>
     </div>
 
     <div class="status-box">
         <div class="status-display" id="status-text">状態: 停止中</div>
+        <div class="distance-display" id="distance-text">前方距離: -- cm</div>
         <div class="visualizer"><div class="arrow" id="arrow-icon">⏹</div></div>
     </div>
 
-    <!-- 歯車で開閉する設定パネル（左右の数値入力） -->
+    <!-- 設定パネル（トリム調整） -->
     <div class="settings-panel" id="settingsPanel">
-        <div class="settings-title">モーター出力調整 (トリム設定)</div>
+        <div class="settings-title">モーター出力トリム設定</div>
         <div class="inputs-grid">
             <div class="input-group">
                 <label>左スピード (%)</label>
@@ -64,29 +83,40 @@
                 <input type="number" id="right-input" min="0" max="100" value="100">
             </div>
         </div>
-        <button class="apply-btn" onclick="applySpeed()">設定を適用する</button>
+        <button class="apply-btn" onclick="applySpeed()">設定を反映する</button>
     </div>
 
-    <!-- 動作コマンドボタン（直進・後退・停止） -->
+    <!-- コントロールボタン群 -->
     <div class="control-panel">
         <button class="btn" onclick="sendCommand('forward')">▲ 前進</button>
+        <div class="btn-row">
+            <button class="btn" onclick="sendCommand('turn_left')">↺ 左90°旋回</button>
+            <button class="btn" onclick="sendCommand('turn_right')">↻ 右90°旋回</button>
+        </div>
         <button class="btn" onclick="sendCommand('backward')">▼ 後退</button>
         <button class="btn btn-stop" onclick="sendCommand('stop')">■ 停止</button>
     </div>
 
+    <!-- システムログ表示 -->
+    <div class="log-box" id="log-text">LOG: システム準備完了</div>
+
     <script>
         function toggleSettings() {
-            const panel = document.getElementById('settingsPanel');
-            panel.classList.toggle('show');
+            document.getElementById('settingsPanel').classList.toggle('show');
+        }
+
+        function setMode(mode) {
+            fetch('/cmd?action=set_mode&mode=' + mode)
+                .then(res => res.json())
+                .then(data => updateState(data));
         }
 
         function applySpeed() {
             const lVal = document.getElementById('left-input').value;
             const rVal = document.getElementById('right-input').value;
-            
             fetch('/cmd?action=set_speed&left=' + lVal + '&right=' + rVal)
                 .then(res => res.json())
-                .then(data => updateUI(data.status, data.left, data.right));
+                .then(data => updateState(data));
         }
 
         function sendCommand(action) {
@@ -94,14 +124,35 @@
             const rVal = document.getElementById('right-input').value;
             fetch('/cmd?action=' + action + '&left=' + lVal + '&right=' + rVal)
                 .then(res => res.json())
-                .then(data => updateUI(data.status, data.left, data.right));
+                .then(data => updateState(data));
         }
 
-        function updateUI(status, left, right) {
-            document.getElementById('status-text').innerText = '状態: ' + status + ' (左:' + left + '% / 右:' + right + '%)';
+        // 定期的に状態（距離やステータス）をポーリング取得
+        setInterval(() => {
+            fetch('/status')
+                .then(res => res.json())
+                .then(data => updateState(data));
+        }, 500);
+
+        function updateState(data) {
+            document.getElementById('status-text').innerText = '状態: ' + data.status + ' (' + (data.mode === 'auto' ? '自律' : '手動') + ')';
+            document.getElementById('distance-text').innerText = '前方距離: ' + data.distance + ' cm';
+            document.getElementById('log-text').innerText = 'LOG: ' + data.log;
+
+            // モードボタンの見た目切り替え
+            if (data.mode === 'auto') {
+                document.getElementById('btn-auto').classList.add('active');
+                document.getElementById('btn-manual').classList.remove('active');
+            } else {
+                document.getElementById('btn-manual').classList.add('active');
+                document.getElementById('btn-auto').classList.remove('active');
+            }
+
             const arrow = document.getElementById('arrow-icon');
-            if (status === '前進中') { arrow.innerText = '▲'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
-            else if (status === '後退中') { arrow.innerText = '▼'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            if (data.status.includes('前進')) { arrow.innerText = '▲'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else if (data.status.includes('後退')) { arrow.innerText = '▼'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else if (data.status.includes('左折')) { arrow.innerText = '↺'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else if (data.status.includes('右折')) { arrow.innerText = '↻'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
             else { arrow.innerText = '⏹'; arrow.style.transform = 'translate(-50%, -50%) scale(1.0)'; }
         }
     </script>
