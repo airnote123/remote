@@ -3,46 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pico Straight Trim Control</title>
+    <title>Pico Rover Control Panel</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
-        h1 { margin-bottom: 5px; color: #00e676; }
-        .status-box { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; padding: 15px; margin: 15px auto; max-width: 360px; }
-        .status-display { font-size: 1.3rem; font-weight: bold; color: #00e676; margin-bottom: 10px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #333; text-align: center; margin: 0; padding: 20px; }
         
-        .visualizer { width: 100px; height: 100px; margin: 0 auto; border: 3px solid #555; border-radius: 50%; position: relative; background: #000; }
-        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.8rem; transition: transform 0.2s; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 360px; margin: 0 auto 10px auto; }
+        h1 { font-size: 1.4rem; color: #2c3e50; margin: 0; }
         
-        /* 左右独立スライダーコンテナ */
-        .sliders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 360px; margin: 20px auto; }
-        .slider-box { background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        .slider-box.right { border-color: #00e676; } /* 右側スライダーを強調 */
-        input[type=range] { width: 100%; accent-color: #00e676; }
+        /* 歯車設定ボタン */
+        .gear-btn { background: #e2e8f0; border: none; font-size: 1.4rem; padding: 8px 12px; border-radius: 50%; cursor: pointer; transition: background 0.2s; }
+        .gear-btn:hover { background: #cbd5e1; }
+
+        .status-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; margin: 10px auto; max-width: 360px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .status-display { font-size: 1.2rem; font-weight: bold; color: #2563eb; margin-bottom: 10px; }
         
+        .visualizer { width: 90px; height: 90px; margin: 0 auto; border: 3px solid #cbd5e1; border-radius: 50%; position: relative; background: #f8fafc; }
+        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; transition: transform 0.2s; color: #1e293b; }
+        
+        /* 設定パネル（初期は非表示、歯車でトグル） */
+        .settings-panel { max-width: 360px; margin: 0 auto 15px auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left; }
+        .settings-panel.show { display: block; }
+        .settings-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 10px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        
+        .inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .input-group label { font-size: 0.85rem; color: #64748b; font-weight: bold; display: block; margin-bottom: 4px; }
+        .input-group input { width: 100%; padding: 8px; font-size: 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; text-align: center; background: #f8fafc; }
+        .apply-btn { width: 100%; margin-top: 10px; background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .apply-btn:active { background: #2563eb; }
+
         /* コントロールボタン群 */
-        .control-panel { max-width: 360px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
-        .btn { background: #2c2c2c; color: #fff; border: none; padding: 18px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; user-select: none; font-weight: bold; }
-        .btn:active { background: #00e676; color: #000; }
-        .btn-stop { background: #ff1744; color: #fff; }
+        .control-panel { max-width: 360px; margin: 15px auto; display: flex; flex-direction: column; gap: 10px; }
+        .btn { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; padding: 16px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; user-select: none; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn:active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .btn-stop { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .btn-stop:active { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
-    <h1>STRAIGHT LINE TRIM</h1>
+
+    <div class="header-container">
+        <h1>ROVER CONTROL</h1>
+        <button class="gear-btn" onclick="toggleSettings()" title="設定">⚙️</button>
+    </div>
+
     <div class="status-box">
         <div class="status-display" id="status-text">STATUS: STOP</div>
         <div class="visualizer"><div class="arrow" id="arrow-icon">⏹</div></div>
     </div>
 
-    <!-- 左右スピード調整スライダー -->
-    <div class="sliders-grid">
-        <div class="slider-box">
-            <label>左スピード<br><b id="left-val">70</b>%</label><br><br>
-            <input type="range" id="left-slider" min="0" max="100" value="70" onchange="updateSpeed()">
+    <!-- 歯車で開閉する設定パネル（左右の数値入力） -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-title">モーター出力調整 (トリム設定)</div>
+        <div class="inputs-grid">
+            <div class="input-group">
+                <label>左スピード (%)</label>
+                <input type="number" id="left-input" min="0" max="100" value="93">
+            </div>
+            <div class="input-group">
+                <label>右スピード (%)</label>
+                <input type="number" id="right-input" min="0" max="100" value="100">
+            </div>
         </div>
-        <div class="slider-box right">
-            <label>右スピード (調整)<br><b id="right-val">70</b>%</label><br><br>
-            <input type="range" id="right-slider" min="0" max="100" value="70" onchange="updateSpeed()">
-        </div>
+        <button class="apply-btn" onclick="applySpeed()">設定を適用する</button>
     </div>
 
     <!-- 動作コマンドボタン（直進・後退・停止） -->
@@ -53,11 +75,14 @@
     </div>
 
     <script>
-        function updateSpeed() {
-            const lVal = document.getElementById('left-slider').value;
-            const rVal = document.getElementById('right-slider').value;
-            document.getElementById('left-val').innerText = lVal;
-            document.getElementById('right-val').innerText = rVal;
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('show');
+        }
+
+        function applySpeed() {
+            const lVal = document.getElementById('left-input').value;
+            const rVal = document.getElementById('right-input').value;
             
             fetch('/cmd?action=set_speed&left=' + lVal + '&right=' + rVal)
                 .then(res => res.json())
@@ -65,8 +90,8 @@
         }
 
         function sendCommand(action) {
-            const lVal = document.getElementById('left-slider').value;
-            const rVal = document.getElementById('right-slider').value;
+            const lVal = document.getElementById('left-input').value;
+            const rVal = document.getElementById('right-input').value;
             fetch('/cmd?action=' + action + '&left=' + lVal + '&right=' + rVal)
                 .then(res => res.json())
                 .then(data => updateUI(data.status, data.left, data.right));
