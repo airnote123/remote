@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pico Rover Control Panel</title>
+    <title>ローバー操作パネル</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; color: #333; text-align: center; margin: 0; padding: 20px; }
         
@@ -42,12 +42,12 @@
 <body>
 
     <div class="header-container">
-        <h1>ROVER CONTROL</h1>
+        <h1>ローバー操作</h1>
         <button class="gear-btn" onclick="toggleSettings()" title="設定">⚙️</button>
     </div>
 
     <div class="status-box">
-        <div class="status-display" id="status-text">STATUS: STOP</div>
+        <div class="status-display" id="status-text">状態: 停止中</div>
         <div class="visualizer"><div class="arrow" id="arrow-icon">⏹</div></div>
     </div>
 
@@ -69,9 +69,9 @@
 
     <!-- 動作コマンドボタン（直進・後退・停止） -->
     <div class="control-panel">
-        <button class="btn" onclick="sendCommand('forward')">▲ 前進 (FORWARD)</button>
-        <button class="btn" onclick="sendCommand('backward')">▼ 後退 (BACKWARD)</button>
-        <button class="btn btn-stop" onclick="sendCommand('stop')">■ 停止 (STOP)</button>
+        <button class="btn" onclick="sendCommand('forward')">▲ 前進</button>
+        <button class="btn" onclick="sendCommand('backward')">▼ 後退</button>
+        <button class="btn btn-stop" onclick="sendCommand('stop')">■ 停止</button>
     </div>
 
     <script>
@@ -98,10 +98,10 @@
         }
 
         function updateUI(status, left, right) {
-            document.getElementById('status-text').innerText = 'STATUS: ' + status + ' (L:' + left + '% / R:' + right + '%)';
+            document.getElementById('status-text').innerText = '状態: ' + status + ' (左:' + left + '% / 右:' + right + '%)';
             const arrow = document.getElementById('arrow-icon');
-            if (status === 'FORWARD') { arrow.innerText = '▲'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
-            else if (status === 'BACKWARD') { arrow.innerText = '▼'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            if (status === '前進中') { arrow.innerText = '▲'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else if (status === '後退中') { arrow.innerText = '▼'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
             else { arrow.innerText = '⏹'; arrow.style.transform = 'translate(-50%, -50%) scale(1.0)'; }
         }
     </script>
