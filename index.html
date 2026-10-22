@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pico Straight Trim Control</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
+        h1 { margin-bottom: 5px; color: #00e676; }
+        .status-box { background: #1e1e1e; border: 2px solid #333; border-radius: 12px; padding: 15px; margin: 15px auto; max-width: 360px; }
+        .status-display { font-size: 1.3rem; font-weight: bold; color: #00e676; margin-bottom: 10px; }
+        
+        .visualizer { width: 100px; height: 100px; margin: 0 auto; border: 3px solid #555; border-radius: 50%; position: relative; background: #000; }
+        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.8rem; transition: transform 0.2s; }
+        
+        /* 左右独立スライダーコンテナ */
+        .sliders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 360px; margin: 20px auto; }
+        .slider-box { background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .slider-box.right { border-color: #00e676; } /* 右側スライダーを強調 */
+        input[type=range] { width: 100%; accent-color: #00e676; }
+        
+        /* コントロールボタン群 */
+        .control-panel { max-width: 360px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
+        .btn { background: #2c2c2c; color: #fff; border: none; padding: 18px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; user-select: none; font-weight: bold; }
+        .btn:active { background: #00e676; color: #000; }
+        .btn-stop { background: #ff1744; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>STRAIGHT LINE TRIM</h1>
+    <div class="status-box">
+        <div class="status-display" id="status-text">STATUS: STOP</div>
+        <div class="visualizer"><div class="arrow" id="arrow-icon">⏹</div></div>
+    </div>
+
+    <!-- 左右スピード調整スライダー -->
+    <div class="sliders-grid">
+        <div class="slider-box">
+            <label>左スピード<br><b id="left-val">70</b>%</label><br><br>
+            <input type="range" id="left-slider" min="0" max="100" value="70" onchange="updateSpeed()">
+        </div>
+        <div class="slider-box right">
+            <label>右スピード (調整)<br><b id="right-val">70</b>%</label><br><br>
+            <input type="range" id="right-slider" min="0" max="100" value="70" onchange="updateSpeed()">
+        </div>
+    </div>
+
+    <!-- 動作コマンドボタン（直進・後退・停止） -->
+    <div class="control-panel">
+        <button class="btn" onclick="sendCommand('forward')">▲ 前進 (FORWARD)</button>
+        <button class="btn" onclick="sendCommand('backward')">▼ 後退 (BACKWARD)</button>
+        <button class="btn btn-stop" onclick="sendCommand('stop')">■ 停止 (STOP)</button>
+    </div>
+
+    <script>
+        function updateSpeed() {
+            const lVal = document.getElementById('left-slider').value;
+            const rVal = document.getElementById('right-slider').value;
+            document.getElementById('left-val').innerText = lVal;
+            document.getElementById('right-val').innerText = rVal;
+            
+            fetch('/cmd?action=set_speed&left=' + lVal + '&right=' + rVal)
+                .then(res => res.json())
+                .then(data => updateUI(data.status, data.left, data.right));
+        }
+
+        function sendCommand(action) {
+            const lVal = document.getElementById('left-slider').value;
+            const rVal = document.getElementById('right-slider').value;
+            fetch('/cmd?action=' + action + '&left=' + lVal + '&right=' + rVal)
+                .then(res => res.json())
+                .then(data => updateUI(data.status, data.left, data.right));
+        }
+
+        function updateUI(status, left, right) {
+            document.getElementById('status-text').innerText = 'STATUS: ' + status + ' (L:' + left + '% / R:' + right + '%)';
+            const arrow = document.getElementById('arrow-icon');
+            if (status === 'FORWARD') { arrow.innerText = '▲'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else if (status === 'BACKWARD') { arrow.innerText = '▼'; arrow.style.transform = 'translate(-50%, -50%) scale(1.2)'; }
+            else { arrow.innerText = '⏹'; arrow.style.transform = 'translate(-50%, -50%) scale(1.0)'; }
+        }
+    </script>
+</body>
+</html>
